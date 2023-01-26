@@ -1,6 +1,7 @@
 package sk.figlar.weatherapp
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -28,6 +29,8 @@ import sk.figlar.weatherapp.network.WeatherService
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
+
+    private lateinit var mProgressDialog: Dialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,9 +96,12 @@ class MainActivity : AppCompatActivity() {
                 Constants.APP_ID,
             )
 
+            showCustomProgressDialog()
+
             listCall.enqueue(object : Callback<WeatherResponse>{
                 override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
                     if (response.isSuccessful) {
+                        hideProgressDialog()
                         val weatherList: WeatherResponse? = response.body()
                         Log.i("Response Result", weatherList.toString())
                     } else {
@@ -113,6 +119,7 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
                     Log.e("Errorrrrrr", t.message.toString())
+                    hideProgressDialog()
                 }
 
             })
@@ -155,5 +162,17 @@ class MainActivity : AppCompatActivity() {
         val locationManager: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    private fun showCustomProgressDialog() {
+        mProgressDialog = Dialog(this)
+        mProgressDialog.setContentView(R.layout.dialog_custom_progress)
+        mProgressDialog.show()
+    }
+
+    private fun hideProgressDialog() {
+        if (mProgressDialog.isShowing) {
+            mProgressDialog.dismiss()
+        }
     }
 }
