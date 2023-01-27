@@ -26,6 +26,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import sk.figlar.weatherapp.databinding.ActivityMainBinding
 import sk.figlar.weatherapp.models.WeatherResponse
 import sk.figlar.weatherapp.network.WeatherService
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -54,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                     android.Manifest.permission.ACCESS_FINE_LOCATION,
                     android.Manifest.permission.ACCESS_COARSE_LOCATION,
                 )
-                .withListener(object: MultiplePermissionsListener{
+                .withListener(object : MultiplePermissionsListener {
                     override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
                         if (report!!.areAllPermissionsGranted()) {
                             requestLocationData()
@@ -74,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val mLocationCallback = object: LocationCallback() {
+    private val mLocationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
             val mLastLocation: Location? = locationResult.lastLocation
             val latitude = mLastLocation?.latitude
@@ -103,7 +105,7 @@ class MainActivity : AppCompatActivity() {
 
             showCustomProgressDialog()
 
-            listCall.enqueue(object : Callback<WeatherResponse>{
+            listCall.enqueue(object : Callback<WeatherResponse> {
                 override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
                     if (response.isSuccessful) {
                         hideProgressDialog()
@@ -113,7 +115,7 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         val responseCode = response.code()
                         when (responseCode) {
-                            400 -> {
+                            400  -> {
                                 Log.e("Error 400", "Bad Connection")
                             }
                             else -> {
@@ -155,7 +157,7 @@ class MainActivity : AppCompatActivity() {
                     val uri = Uri.fromParts("package", packageName, null)
                     intent.data = uri
                     startActivity(intent)
-                } catch(e: ActivityNotFoundException) {
+                } catch (e: ActivityNotFoundException) {
                     e.printStackTrace()
                 }
             }
@@ -183,12 +185,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupUI(weatherList: WeatherResponse) {
-        for (i in weatherList.weather.indices) {
-            with(binding) {
+        with(binding) {
+            for (i in weatherList.weather.indices) {
                 tvMain.text = weatherList.weather[i].main
                 tvMainDescription.text = weatherList.weather[i].description
-                tvTemp.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
             }
+            tvTemp.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+
+            tvHumidity.text = weatherList.main.humidity.toString() + "%"
+            tvMin.text = weatherList.main.temp_min.toString() + " min"
+            tvMax.text = weatherList.main.temp_max.toString() + " max"
+            tvSpeed.text = weatherList.wind.speed.toString()
+            tvName.text = weatherList.name
+            tvCountry.text = weatherList.sys.country
+
+            tvSunriseTime.text = unixTime(weatherList.sys.sunrise)
+            tvSunsetTime.text = unixTime(weatherList.sys.sunset)
         }
     }
 
@@ -198,5 +210,12 @@ class MainActivity : AppCompatActivity() {
             result = "°F"
         }
         return result
+    }
+
+    private fun unixTime(timex: Long): String {
+        val date = Date(timex * 1000)
+        val sdf = SimpleDateFormat("HH:mm")
+        sdf.timeZone = TimeZone.getDefault()
+        return sdf.format(date)
     }
 }
