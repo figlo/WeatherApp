@@ -189,6 +189,23 @@ class MainActivity : AppCompatActivity() {
             for (i in weatherList.weather.indices) {
                 tvMain.text = weatherList.weather[i].main
                 tvMainDescription.text = weatherList.weather[i].description
+
+                when (weatherList.weather[i].icon) {
+                    "01d" -> ivMain.setImageResource(R.drawable.sunny)
+                    "02d" -> ivMain.setImageResource(R.drawable.cloud)
+                    "03d" -> ivMain.setImageResource(R.drawable.cloud)
+                    "04d" -> ivMain.setImageResource(R.drawable.cloud)
+                    "04n" -> ivMain.setImageResource(R.drawable.cloud)
+                    "10d" -> ivMain.setImageResource(R.drawable.rain)
+                    "11d" -> ivMain.setImageResource(R.drawable.storm)
+                    "13d" -> ivMain.setImageResource(R.drawable.snowflake)
+                    "01n" -> ivMain.setImageResource(R.drawable.cloud)
+                    "02n" -> ivMain.setImageResource(R.drawable.cloud)
+                    "03n" -> ivMain.setImageResource(R.drawable.cloud)
+                    "10n" -> ivMain.setImageResource(R.drawable.cloud)
+                    "11n" -> ivMain.setImageResource(R.drawable.rain)
+                    "13n" -> ivMain.setImageResource(R.drawable.snowflake)
+                }
             }
             tvTemp.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
 
