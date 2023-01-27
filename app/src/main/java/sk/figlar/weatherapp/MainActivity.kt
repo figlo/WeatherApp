@@ -23,6 +23,7 @@ import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import retrofit2.*
 import retrofit2.converter.gson.GsonConverterFactory
+import sk.figlar.weatherapp.databinding.ActivityMainBinding
 import sk.figlar.weatherapp.models.WeatherResponse
 import sk.figlar.weatherapp.network.WeatherService
 
@@ -32,9 +33,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mProgressDialog: Dialog
 
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -102,7 +107,8 @@ class MainActivity : AppCompatActivity() {
                 override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
                     if (response.isSuccessful) {
                         hideProgressDialog()
-                        val weatherList: WeatherResponse? = response.body()
+                        val weatherList: WeatherResponse = response.body()!!
+                        setupUI(weatherList)
                         Log.i("Response Result", weatherList.toString())
                     } else {
                         val responseCode = response.code()
@@ -174,5 +180,23 @@ class MainActivity : AppCompatActivity() {
         if (mProgressDialog.isShowing) {
             mProgressDialog.dismiss()
         }
+    }
+
+    private fun setupUI(weatherList: WeatherResponse) {
+        for (i in weatherList.weather.indices) {
+            with(binding) {
+                tvMain.text = weatherList.weather[i].main
+                tvMainDescription.text = weatherList.weather[i].description
+                tvTemp.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+            }
+        }
+    }
+
+    private fun getUnit(value: String): String {
+        var result = "°C"
+        if (value == "US" || value == "LR" || value == "MM") {
+            result = "°F"
+        }
+        return result
     }
 }
